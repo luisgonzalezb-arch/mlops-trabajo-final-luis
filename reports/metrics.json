@@ -1,0 +1,9 @@
+{
+  "metric": "RMSE",
+  "rmse_test": 54.461217375612414,
+  "model": "RandomForestRegressor",
+  "data": "data/training/processed.csv",
+  "test_size": 0.2,
+  "random_state": 42,
+  "n_features": 10
+}
