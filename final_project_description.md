@@ -1,78 +1,72 @@
-# MLOps Introduction: Final Project Description
+# MLOps: Proyecto Final
 
-## Overview
-The final project for the "Introduction to MLOps" course consists of comprehensive tasks covering Machine Learning model development and serving.
+## A) Definición del problema (Problem Definition)
 
-Expected results:
-- Required: your Github repository containing your code, reports, datasets, etc.
-- Optional: external documents/files.
-You can use this project structure/repo to kick off your work. You could even fork it to simplify that process. Feel free to modify that project structure and create/rename folder/files.
+### Caso de uso (AI/ML Use Case)
+Este proyecto implementa un caso de **regresión supervisada** cuyo objetivo es **predecir la progresión de la diabetes** (salida numérica) a partir de 10 variables de entrada estandarizadas. El modelo entrenado se expone mediante una **API REST** para realizar inferencias.
 
-### Goals
-* **Adhere to the ML Lifecycle:** Use the standard ML lifecycle as a continuous reference for all activities.
-* **Software Skills:** Apply essential software development knowledge (version control, modularity) to the ML lifecycle.
-* **ML Engineering skills:** Implement ML engineering practices for development, deployment, and serving.
-* **MLOps Adoption:** Apply and integrate core MLOps concepts throughout the project.
+### Contexto, objetivo y beneficios
+En contextos reales, modelos predictivos pueden apoyar el seguimiento de pacientes y la priorización de casos. En este trabajo (de enfoque académico), el objetivo es **demostrar el ciclo de vida de un sistema de ML** con prácticas de MLOps: adquisición de datos, preparación, entrenamiento, evaluación con métricas, serialización del modelo y despliegue para inferencia.
+
+**Resultado esperado:** recibir un conjunto de *features* y devolver una **predicción numérica** consumible por API.
+
+### Restricciones y supuestos
+- El dataset es **pequeño** y público; el desempeño está limitado por el tamaño de muestra.
+- Las variables se encuentran **estandarizadas** (propio del dataset de referencia), por lo que no se realiza una “limpieza” intensiva; se priorizan **validaciones de calidad** y trazabilidad del flujo.
+- El proyecto no busca uso clínico real, sino evidenciar competencias de ML/MLOps a nivel académico.
+
+### Métrica de éxito (Success Metric)
+La métrica principal es **RMSE (Root Mean Squared Error)** sobre un conjunto de prueba (*hold-out*).
+
+- **Criterio de éxito (alto nivel):** obtener un RMSE menor que un baseline simple (por ejemplo, regresión lineal) y dejar evidencia reproducible de métricas/experimentos en el repositorio.
 
 
-## Final Work Definition
-This final work cover the main stages/phases of the ML lifecycle:
+## Data Acquisition
 
-<img src="resources/images/machine_learning_lifecycle.png" alt="ML Lifecycle" height="210">
+### 1) Identificar (fuente del dataset)
+Para este proyecto se utiliza el dataset público **Diabetes** provisto por **scikit-learn**, accesible mediante `sklearn.datasets.load_diabetes`. Se emplea como dataset de referencia académica para un problema de **regresión supervisada**.
 
-The following sections detail the requirements and steps for the final project:
+### 2) Definir (qué es el dataset y qué representa)
+- **Tipo de problema:** Regresión (predicción de un valor numérico).
+- **Unidad de análisis:** 1 observación corresponde a 1 registro/paciente (según la definición del dataset).
+- **Objetivo (target):** `y`, variable continua a predecir asociada a la progresión/medida definida por el dataset.
+- **Entradas (features):** 10 variables numéricas estandarizadas.
 
-### A) Problem Definition
-* **Define an AI/ML Use Case:** Identify a specific problem that can be solved via ML/AI models.
-    * Describe the problem context, constraints, goals, benefits, and expected results.
-    * **Optional:** Define high-level success metrics (i.e., what results must be achieved to consider the ML solution a success).
-* **Data Acquisition:** Identify, define, describe, and analyze your raw dataset(s).
-### B) Project Preparation
-- Create a **public GitHub repository** in your account. 
-    * Suggested naming: `uni_mds_ciclo3_ml_project`.
-    * You could also fork this [repo](https://github.com/UNI-MDS/mlops-final-project)
-- Clone your repository locally for development.
-- Establish a project structure.
-- Work within a dedicated **new branch**.
+### 3) Describir (estructura y variables)
+- **Features (10):** `age`, `sex`, `bmi`, `bp`, `s1`, `s2`, `s3`, `s4`, `s5`, `s6`
+- **Target:** `y`
 
-### C) ML Experimentation
-* Recomended folders to be used: `notebooks`, `experiments`
-* **Execution:** Conduct experiments via Jupyter Notebooks and/or Python scripts.
-* **Data Preparation:** Apply data transformations (if needed) to generate your training dataset.
-* **Model Selection:** Choose and train your ML models.
-* **Evaluation:** Analyze and evaluate the performance results.
-* **Model Selection:** Identify your "champion" (best) model.
-* **Optional:** Use **MLflow** to track and register your experiments.
-* **Expected Result:** notebooks and/or results (plots, images, docs, metrics, etc) about your experiments and evaluations. You can  also put your results in the `reports` folder.
-### D) ML Development Activities
-* **Data Preparation:**
-    * Save your raw dataset in a structured directory (e.g., `/data/raw/`).
-    * Implement transformations in a modular Python script (e.g., `src/data_preparation.py`).
-    * *Note: If transformations are not required, provide a justification using graphics or analysis.*
-    * Describe the features (variables) of the final training dataset.
-    * **Expected Result:** A final training dataset saved in a designated folder (e.g., `/data/training/` or `/data/features/`).
-* **Model Training Implementation:**
-    * Implement training logic in a Python script (e.g., `src/train.py`).
-    * Include **model serialization** (saving the model in `.pkl`, `.joblib`, or other standard formats).
-    * **Expected Result:** A serialized trained model saved in a folder (e.g., `/models/<model_name>.pkl`).
-* **Model Registry (Optional):**
-    * Register your model in a registry, such as **MLflow Model Registry**.
+### 4) Adquirir y almacenar (raw → processed)
+La adquisición del dataset se realiza desde scikit-learn y se exporta a un archivo CSV en la carpeta `data/raw/`.  
+Posteriormente, se genera un dataset de entrenamiento en la carpeta `data/training/` como resultado del proceso de preparación de datos.
 
-### E) Model Deployment & Serving
-* **Model Serving Strategy:** Implement one of the following two approaches:
-    1.  **Web/REST API:** Use the **Flask** or **FastAPI** library. (Example filename: `src/serving.py`).
-    2.  **MLflow Serving:** Serve the model locally using the `mlflow models serve` command.
-* **Model Inference:**
-    * Launch your model API from the previous step.
-    * **Perform Predictions:** Use a REST client (`curl`, a Python script, `Postman`, etc) to request predictions by passing inputs to your API.
-    * Document/register your results in report. You could use the `reports` folder or even use the `README.md` file.
-    * **Expected Result:** Successful generation of prediction values (class, label, or numerical output).
+Artefactos generados dentro del repositorio:
+- **Dataset raw:** `data/raw/diabetes.csv`
+- **Dataset de entrenamiento (processed):** `data/training/processed.csv`
 
-### F) Delivery:
-* Use the `README.md` file as a initial/centralized point to document/describe your work. You can also create other files and refer them via links.
-  * You can also create/send additional files if needed.
-  * Try to collect images, tables, reports and other resources to show your results.
-* When your work is done in your Git branch you should create a Pull Request (PR) to merge your work into `main` branch.
-* In that way, The final project (python code, reports, docs, datasets, etc) should be in the `main` branch.
-* The optional items will be considered to gain extra points in the evaluation.
-* Use the provided Google form to submit your work (essentially giving your Github repo URL link).
+### 5) Analizar (análisis básico del dataset raw)
+Para “analizar” el dataset raw antes del entrenamiento, se consideran los siguientes controles básicos (data quality checks):
+
+- **Dimensión del dataset:** verificación del número de filas y columnas.
+- **Valores faltantes (nulos):** validación de nulos por columna y total.
+- **Duplicados:** verificación de filas duplicadas.
+- **Tipos de datos:** revisión de tipos por columna (numéricos esperados).
+- **Consistencia de variables:** confirmación de la existencia del target (`y`) y de las 10 features esperadas.
+
+**Nota:** el dataset Diabetes de scikit-learn se entrega típicamente estandarizado y sin valores faltantes; por ello, el foco de esta etapa es documentar adecuadamente la adquisición, validar consistencia básica y asegurar trazabilidad del flujo `raw → processed`.
+
+## C) ML Experimentation (Experimentación y Evaluación)
+
+La experimentación, evaluación y selección del modelo campeón se documenta en el siguiente notebook (Google Colab):
+
+- **Notebook (Colab):** https://colab.research.google.com/drive/11Y0YkhtecAujJ93O5f8p4khgKV7yb9fw
+
+### Evidencias incluidas en el notebook
+- Ejecución de experimentos en Jupyter Notebook.
+- Data Preparation con diagnóstico (nulos, duplicados, outliers y correlación) y justificación de tratamiento.
+- Entrenamiento y comparación de múltiples modelos de clasificación (baseline y candidatos).
+- Evaluación con métricas (ROC-AUC como métrica principal, además de F1/Recall/Accuracy).
+- Selección del modelo campeón (mejor ROC-AUC) y soporte con:
+  - Curva ROC
+  - Matriz de confusión
+  - Reporte por clase (classification_report) y recall por clase (malignant/benign).
