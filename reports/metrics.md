@@ -1,8 +1,13 @@
-# Model Metrics
+# Model Metrics (Breast Cancer)
 
-- **Metric:** RMSE
-- **RMSE (test):** 54.4612
-- **Model:** RandomForestRegressor
-- **Dataset:** `data/training/processed.csv`
-- **Test split:** 0.2
-- **Random state:** 42
+- **Primary metric (ROC-AUC):** 0.99537
+- **F1:** 0.98611
+- **Recall (benign=1):** 0.98611
+- **Recall (malignant=0):** 0.97619
+- **Accuracy:** 0.98246
+
+- Model: LogisticRegression + StandardScaler
+- Dataset: `data/training/processed.csv`
+- Features: 30
+- Target mapping: 0=malignant, 1=benign
+- Threshold: 0.5
