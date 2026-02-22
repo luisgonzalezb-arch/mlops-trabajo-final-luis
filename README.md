@@ -1,4 +1,5 @@
 # MLOps Introduction: Final Project
+
 Final work description in the final_project_description.md file.
 
 ## Student info
@@ -93,3 +94,4 @@ La experimentación, evaluación y selección del modelo campeón se documenta e
 - Este `README.md` centraliza la documentación del trabajo.
 - Se incluyen scripts (`src/`), tests (`tests/`) y artefactos (`models/`, `reports/`, `data/`).
 - La entrega final se consolida en la rama `main` mediante Pull Requests.
+
