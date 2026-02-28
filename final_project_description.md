@@ -3,70 +3,145 @@
 ## A) Definición del problema (Problem Definition)
 
 ### Caso de uso (AI/ML Use Case)
-Este proyecto implementa un caso de **regresión supervisada** cuyo objetivo es **predecir la progresión de la diabetes** (salida numérica) a partir de 10 variables de entrada estandarizadas. El modelo entrenado se expone mediante una **API REST** para realizar inferencias.
+Este proyecto implementa un caso de **clasificación binaria supervisada** cuyo objetivo es **predecir si un tumor es maligno o benigno** a partir de **30 características numéricas** calculadas sobre imágenes de núcleos celulares (Breast Cancer Wisconsin - Diagnostic).  
+El modelo entrenado se expone mediante una **API REST** para realizar inferencias.
 
 ### Contexto, objetivo y beneficios
-En contextos reales, modelos predictivos pueden apoyar el seguimiento de pacientes y la priorización de casos. En este trabajo (de enfoque académico), el objetivo es **demostrar el ciclo de vida de un sistema de ML** con prácticas de MLOps: adquisición de datos, preparación, entrenamiento, evaluación con métricas, serialización del modelo y despliegue para inferencia.
+En contextos reales, modelos de clasificación pueden apoyar el análisis y priorización de casos (**no reemplazan el diagnóstico clínico**).  
+En este trabajo (enfoque académico), el objetivo es demostrar el ciclo de vida completo de un sistema de ML con prácticas de MLOps: **adquisición de datos, preparación, entrenamiento, evaluación con métricas, serialización del modelo y despliegue para inferencia**.
 
-**Resultado esperado:** recibir un conjunto de *features* y devolver una **predicción numérica** consumible por API.
+**Resultado esperado:** recibir un conjunto de *features* y devolver una **predicción de clase** (malignant/benign) junto con **probabilidades** consumibles por API.
 
 ### Restricciones y supuestos
-- El dataset es **pequeño** y público; el desempeño está limitado por el tamaño de muestra.
-- Las variables se encuentran **estandarizadas** (propio del dataset de referencia), por lo que no se realiza una “limpieza” intensiva; se priorizan **validaciones de calidad** y trazabilidad del flujo.
+- El dataset es público y de tamaño limitado; el desempeño está acotado por la muestra.
 - El proyecto no busca uso clínico real, sino evidenciar competencias de ML/MLOps a nivel académico.
+- La selección del modelo se basa en métricas sobre un split **train/test** reproducible.
 
 ### Métrica de éxito (Success Metric)
-La métrica principal es **RMSE (Root Mean Squared Error)** sobre un conjunto de prueba (*hold-out*).
+- **Métrica principal:** **ROC-AUC** (mayor es mejor).
+- **Métricas complementarias:** **F1**, **Recall por clase** (malignant y benign) y **Accuracy**.
+- **Criterio de éxito (alto nivel):** obtener un ROC-AUC alto y evidenciar evaluación reproducible; reportar desempeño por clase considerando el mapeo:
+  - **0 = malignant**
+  - **1 = benign**
 
-- **Criterio de éxito (alto nivel):** obtener un RMSE menor que un baseline simple (por ejemplo, regresión lineal) y dejar evidencia reproducible de métricas/experimentos en el repositorio.
+---
 
-
-## Data Acquisition
+## B) Data Acquisition (Adquisición de datos)
 
 ### 1) Identificar (fuente del dataset)
-Para este proyecto se utiliza el dataset público **Diabetes** provisto por **scikit-learn**, accesible mediante `sklearn.datasets.load_diabetes`. Se emplea como dataset de referencia académica para un problema de **regresión supervisada**.
+Para este proyecto se utiliza el dataset público **Breast Cancer Wisconsin (Diagnostic)** provisto por **scikit-learn**, accesible mediante `sklearn.datasets.load_breast_cancer`.
 
 ### 2) Definir (qué es el dataset y qué representa)
-- **Tipo de problema:** Regresión (predicción de un valor numérico).
-- **Unidad de análisis:** 1 observación corresponde a 1 registro/paciente (según la definición del dataset).
-- **Objetivo (target):** `y`, variable continua a predecir asociada a la progresión/medida definida por el dataset.
-- **Entradas (features):** 10 variables numéricas estandarizadas.
+- **Tipo de problema:** Clasificación binaria (0/1).
+- **Unidad de análisis:** 1 observación corresponde a un caso/paciente (según definición del dataset).
+- **Objetivo (target):** `target`, con mapeo:
+  - 0 = malignant
+  - 1 = benign
+- **Entradas (features):** 30 variables numéricas (medidas “mean”, “error” y “worst”).
 
 ### 3) Describir (estructura y variables)
-- **Features (10):** `age`, `sex`, `bmi`, `bp`, `s1`, `s2`, `s3`, `s4`, `s5`, `s6`
-- **Target:** `y`
+- **N features:** 30
+- **Features:**
+  - mean radius, mean texture, mean perimeter, mean area, mean smoothness,
+  mean compactness, mean concavity, mean concave points, mean symmetry, mean fractal dimension,
+  radius error, texture error, perimeter error, area error, smoothness error,
+  compactness error, concavity error, concave points error, symmetry error, fractal dimension error,
+  worst radius, worst texture, worst perimeter, worst area, worst smoothness,
+  worst compactness, worst concavity, worst concave points, worst symmetry, worst fractal dimension
+- **Target:** `target` (0=malignant, 1=benign)
 
 ### 4) Adquirir y almacenar (raw → processed)
-La adquisición del dataset se realiza desde scikit-learn y se exporta a un archivo CSV en la carpeta `data/raw/`.  
-Posteriormente, se genera un dataset de entrenamiento en la carpeta `data/training/` como resultado del proceso de preparación de datos.
+La adquisición del dataset se realiza desde scikit-learn y se exporta a un archivo CSV en la carpeta `data/raw/`. Posteriormente, se genera un dataset de entrenamiento en la carpeta `data/training/` como resultado del proceso de preparación de datos.
 
 Artefactos generados dentro del repositorio:
-- **Dataset raw:** `data/raw/diabetes.csv`
+- **Dataset raw:** `data/raw/breast_cancer.csv` *(o el nombre real que uses en tu pipeline)*
 - **Dataset de entrenamiento (processed):** `data/training/processed.csv`
 
 ### 5) Analizar (análisis básico del dataset raw)
-Para “analizar” el dataset raw antes del entrenamiento, se consideran los siguientes controles básicos (data quality checks):
+Se consideran controles básicos (data quality checks):
+- Dimensión del dataset (filas/columnas)
+- Valores faltantes (nulos)
+- Duplicados
+- Tipos de datos esperados (numéricos)
+- Consistencia del target y features esperadas
 
-- **Dimensión del dataset:** verificación del número de filas y columnas.
-- **Valores faltantes (nulos):** validación de nulos por columna y total.
-- **Duplicados:** verificación de filas duplicadas.
-- **Tipos de datos:** revisión de tipos por columna (numéricos esperados).
-- **Consistencia de variables:** confirmación de la existencia del target (`y`) y de las 10 features esperadas.
-
-**Nota:** el dataset Diabetes de scikit-learn se entrega típicamente estandarizado y sin valores faltantes; por ello, el foco de esta etapa es documentar adecuadamente la adquisición, validar consistencia básica y asegurar trazabilidad del flujo `raw → processed`.
+---
 
 ## C) ML Experimentation (Experimentación y Evaluación)
 
-La experimentación, evaluación y selección del modelo campeón se documenta en el siguiente notebook (Google Colab):
-
+La experimentación, evaluación y selección del modelo campeón se documenta en el notebook (Google Colab):
 - **Notebook (Colab):** https://colab.research.google.com/drive/11Y0YkhtecAujJ93O5f8p4khgKV7yb9fw
 
 ### Evidencias incluidas en el notebook
 - Ejecución de experimentos en Jupyter Notebook.
 - Data Preparation con diagnóstico (nulos, duplicados, outliers y correlación) y justificación de tratamiento.
-- Entrenamiento y comparación de múltiples modelos de clasificación (baseline y candidatos).
-- Evaluación con métricas (ROC-AUC como métrica principal, además de F1/Recall/Accuracy).
-- Selección del modelo campeón (mejor ROC-AUC) y soporte con:
+- Comparación de modelos (baseline y candidatos).
+- Evaluación con métricas:
+  - ROC-AUC (principal)
+  - F1, Recall por clase (malignant/benign), Accuracy
+- Soporte con:
   - Curva ROC
   - Matriz de confusión
-  - Reporte por clase (classification_report) y recall por clase (malignant/benign).
+  - classification_report
+
+### Modelo campeón (Champion)
+- **Modelo:** LogisticRegression + StandardScaler
+- **Test size:** 0.20
+- **random_state:** 42
+- **threshold:** 0.50
+- **Resultados (test):**
+  - ROC-AUC: 0.9953703703703703
+  - F1: 0.9861111111111112
+  - Recall (benign=1): 0.9861111111111112
+  - Recall (malignant=0): 0.9761904761904762
+  - Accuracy: 0.9824561403508771
+
+---
+
+## D) ML Development (Desarrollo del modelo)
+
+### Preparación de datos
+- Export `raw` a `data/raw/`
+- Construcción de dataset de entrenamiento en `data/training/processed.csv`
+- Separación reproducible train/test (test_size=0.2, random_state=42)
+- Estandarización con StandardScaler (para el modelo lineal)
+
+### Entrenamiento y serialización
+- Entrenamiento en `src/train.py`
+- Serialización del modelo en `models/model.joblib`
+- Lógica de inferencia en `src/predict.py`
+- Tests en `tests/test_predict.py`
+
+---
+
+## E) Serving (Despliegue/Servicio)
+
+Se implementa un servicio local vía API REST (Flask) en `src/serving.py`.
+
+### Endpoint: /predict
+- **Input:** JSON con las 30 features (nombres exactos)
+- **Output:** clase predicha y probabilidades (benign/malignant), manteniendo el mapeo 0/1
+
+---
+
+## F) Conclusiones, limitaciones y mejoras futuras
+
+### Conclusiones
+- Se construyó un flujo end-to-end reproducible (data → train → evaluate → serialize → serve).
+- LogisticRegression + StandardScaler logró desempeño sobresaliente (ROC-AUC ~0.995) con buena sensibilidad para la clase malignant.
+
+### Limitaciones
+- Dataset académico y público: no representa variabilidad clínica real.
+- No se incluye monitoreo de drift ni validación externa (poblaciones/hospitales distintos).
+- Serving local: no se implementa despliegue productivo (Docker/Cloud) ni CI/CD.
+
+### Mejoras futuras
+- MLflow para tracking de experimentos y model registry.
+- Docker + CI/CD (GitHub Actions) para automatizar tests/build/deploy.
+- Validación de schema de entrada (pydantic) y manejo robusto de errores.
+- Monitoreo de latencia, tasa de errores y drift (data/model).
+
+### Lecciones aprendidas
+- La documentación y trazabilidad del pipeline es clave para reproducibilidad.
+- Mantener consistente el mapeo de clases (0/1) evita errores en inferencia y métricas.
+- Separar lógica de predicción del serving facilita testing y mantenimiento.
