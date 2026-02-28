@@ -1,6 +1,6 @@
 # MLOps Introduction: Final Project
 
-Final work description in the final_project_description.md file.
+Final work description in the [final_project_description.md](final_project_description.md) file.
 
 ## Student info
 - Full name: [LUIS SANITAGO GONZALEZ BRAVO]
